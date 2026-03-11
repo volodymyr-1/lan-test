@@ -82,3 +82,41 @@ After completing a task:
    ```
 4. Git commit with format: `type: description`
 5. Do NOT push — architect reviews first
+
+## Branch strategy (Variant B)
+
+```
+stable   ← последняя известно рабочая версия
+           обновляется ВРУЧНУЮ после проверки main
+           ОТКАТ: git checkout stable
+
+main     ← стабильные релизы (только merge из develop)
+           тегируется: git tag v0.x.0
+
+develop  ← текущая разработка
+           OpenCode работает здесь
+
+feature/ ← одна задача = одна ветка
+           создаётся от develop
+           merge обратно в develop через PR
+```
+
+## Rollback procedure
+
+Если что-то сломалось:
+```powershell
+# Быстрый откат к stable
+cd D:\!Projects\lan-test
+git fetch origin
+git checkout stable
+
+# Откат main к предыдущему тегу
+git checkout v0.1.0
+```
+
+## When to update stable
+
+stable обновляется только когда:
+1. Все тесты в main зелёные
+2. Архитектор (Claude) явно подтверждает
+3. Команда: git checkout stable && git merge main && git push
