@@ -66,3 +66,19 @@ stack-rag        http://localhost:8000   /health
 - MAJOR: breaking change
 
 ## Current version: 0.1.0
+
+## OpenCode workflow (mandatory)
+
+After completing a task:
+1. Run `pytest` — fix until all tests pass
+2. Update `CHANGELOG.md` under correct version section
+3. Write result to `TASKS/current.md` at the bottom:
+   ```
+   ## Result
+   Status: DONE
+   Tests: X passed
+   Commit: <hash>
+   Notes: <any issues>
+   ```
+4. Git commit with format: `type: description`
+5. Do NOT push — architect reviews first
