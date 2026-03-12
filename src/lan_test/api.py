@@ -46,24 +46,41 @@ async def ask(req: AskRequest):
                     "stream":   False,
                 },
             )
-        data       = resp.json()
-        answer     = data["choices"][0]["message"]["content"]
-        provider   = "unknown"
-        quality    = 0.9 if len(answer) > 200 else 0.3
-        saved      = quality >= 0.5
-        latency_ms = round((time.monotonic() - t0) * 1000, 1)
+        resp.raise_for_status()
+        data = resp.json()
+
+        answer          = data["choices"][0]["message"]["content"]
+        provider        = data.get("provider", "unknown")
+        quality         = float(data.get("quality", 0.0))
+        saved           = bool(data.get("saved", False))
+        tried_providers = data.get("tried_providers", [])
+        latency_ms      = round((time.monotonic() - t0) * 1000, 1)
 
         await save_request(RequestRecord(
-            question=req.question, provider=provider,
-            quality=quality, saved=saved, latency_ms=latency_ms,
+            question=req.question,
+            provider=provider,
+            quality=quality,
+            saved=saved,
+            latency_ms=latency_ms,
         ))
 
         return AskResponse(
-            answer=answer, provider=provider, quality=quality,
-            saved=saved, tried_providers=[], latency_ms=latency_ms,
+            answer=answer,
+            provider=provider,
+            quality=quality,
+            saved=saved,
+            tried_providers=tried_providers,
+            latency_ms=latency_ms,
         )
+
+    except httpx.RequestError as e:
+        raise HTTPException(status_code=502, detail=f"Proxy unreachable: {e}")
+    except httpx.HTTPStatusError as e:
+        raise HTTPException(status_code=502, detail=f"Proxy error {e.response.status_code}: {e.response.text[:200]}")
+    except KeyError as e:
+        raise HTTPException(status_code=502, detail=f"Unexpected proxy response format: missing {e}")
     except Exception as e:
-        raise HTTPException(status_code=502, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/history")
