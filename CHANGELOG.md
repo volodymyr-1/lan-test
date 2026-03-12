@@ -6,6 +6,14 @@ Versioning: [Semantic Versioning](https://semver.org/)
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-03-12
+### Changed
+- `POST /ask` — parses real `provider`, `quality`, `saved`, `tried_providers` from langgraph-proxy response (was hardcoded "unknown")
+- Improved error handling: `httpx.RequestError` → 502, `HTTPStatusError` → 502, `KeyError` → 502
+### Added
+- `tests/test_ask.py` — 5 tests covering happy path, provider recording, cascade, 502 on proxy down, 422 on short question
+- `AGENTS.md` — project rules for OpenCode agents
+
 ## [0.1.0] - 2026-03-11
 ### Added
 - Initial project structure (src layout, pyproject.toml, tests)
